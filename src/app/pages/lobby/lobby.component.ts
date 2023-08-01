@@ -11,6 +11,8 @@ export class LobbyComponent  implements OnInit{
 
 
 
+
+
     ngOnInit(): void {
         // Inițializează Three.js
         const scene = new THREE.Scene();
