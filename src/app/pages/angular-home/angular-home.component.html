@@ -1,0 +1,15 @@
+<main #container class=" w-100 h-100">
+    <div
+            class="flying-ball"
+            [@flyBall]="ballSizeState"
+            [style.left.px]="ballPositionX"
+            [style.background-color]="'red'"
+            style="width: 100px;height: 100px"
+            [style.top.px]="ballPositionY"
+            [style.transform]="ballDragged ? 'scale(1.2)' : 'scale(1)'"
+            (mousedown)="startDragging($event)"
+            (mouseup)="stopDragging()"
+            (mouseleave)="stopDragging()"
+    ></div>
+
+</main>

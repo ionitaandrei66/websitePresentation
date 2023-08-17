@@ -2,25 +2,16 @@ import {Component, ElementRef, NgZone, OnInit, ViewChild} from '@angular/core';
 import * as THREE from 'three';
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {ImageService} from "./test.service";
-// import starsTexture from '../../../assets/img/stars.jpg';
-// import sunTexture from '../../../assets/img/sun.jpg';
-// import mercuryTexture from '../../../assets/img/mercury.jpg';
-// import venusTexture from '../../../assets/img/venus.jpg';
-// import earthTexture from '../../../assets/img/earth.jpg';
-// import marsTexture from '../../../assets/img/mars.jpg';
-// import jupiterTexture from '../../../assets/img/jupiter.jpg';
-// import saturnTexture from '../../../assets/img/saturn.jpg';
-// import saturnRingTexture from '../../../assets/img/saturn ring.png';
-// import uranusTexture from '../../../assets/img/uranus.jpg';
-// import uranusRingTexture from '../../../assets/img/uranus ring.png';
-// import neptuneTexture from '../../../assets/img/neptune.jpg';
-// import plutoTexture from '../../../assets/img/pluto.jpg';
+import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+
 
 
 @Component({
   selector: 'app-lobby',
-  templateUrl: './lobby.component.html',
-  styleUrls: ['./lobby.component.scss']
+  template: `<section class="w-100 h-100">
+      <canvas class="w-100 h-100" #threeCanvas></canvas>
+  </section>`,
+  styles: ['']
 })
 export class LobbyComponent  implements OnInit{
     @ViewChild('threeCanvas', { static: true }) threeCanvas!: ElementRef<HTMLCanvasElement>;
@@ -33,52 +24,138 @@ export class LobbyComponent  implements OnInit{
     orbit!: OrbitControls;
     sun!: THREE.Mesh;
     textureLoader = new THREE.TextureLoader();
+
+    earth!: {mesh: THREE.Mesh,orbitRadius: number, orbitSpeed: number, angle: number };
+    jupiter!: {mesh: THREE.Mesh,orbitRadius: number, orbitSpeed: number, angle: number };
+    moon!: {mesh: THREE.Mesh,orbitRadius: number, orbitSpeed: number, angle: number };
     pluto!: {mesh: THREE.Mesh,orbitRadius: number, orbitSpeed: number, angle: number };
+    saturn!: {mesh: THREE.Mesh,orbitRadius: number, orbitSpeed: number, angle: number };
+    venus!: {mesh: THREE.Mesh,orbitRadius: number, orbitSpeed: number, angle: number };
+    mercury!: {mesh: THREE.Mesh,orbitRadius: number, orbitSpeed: number, angle: number };
     mars!: {mesh: THREE.Mesh,orbitRadius: number, orbitSpeed: number, angle: number };
     neptune!: {mesh: THREE.Mesh,orbitRadius: number, orbitSpeed: number, angle: number };
+    uranus!: {mesh: THREE.Mesh,orbitRadius: number, orbitSpeed: number, angle: number };
 
+    backGroundOptions={space_length  :2000000, wormhole_length     :1000, space_velocity      :8 * 0.001, space_rotation      : -10 * 0.0001,
+        wormhole_rotation   :15 * 0.001, wormhole_velocity   : 8 * 0.001, wormhole_freq      : 6,
+        star_density        : 400, star_size           : 2, camera_pos          : new THREE.Vector3(0, 300, 400)}
+    backgr!: THREE.Mesh;
+    private loader = new GLTFLoader();
 
     constructor(private ngZone: NgZone,private imageService: ImageService) {
     }
 
-     async initMars(){
-        const dataUrl = await this.imageService.loadBinaryImage('assets/img/mars.jpg');
-        const marsGeo = new THREE.SphereGeometry(15, 30, 30);
-        const marsMat = new THREE.MeshBasicMaterial({
-            map: this.textureLoader.load(dataUrl)
+    async createMercury(){
+        this.loader.load('assets/3DModels/mercury.glb', (gltf) => {
+            this.mercury ={mesh:gltf.scene.children[0] as THREE.Mesh,angle: 0, orbitRadius: 400, orbitSpeed: 0.0005};
+            this.mercury.mesh.scale.set(2, 2, 2);
+            this.scene.add(this.mercury.mesh);
         });
-        this.mars ={mesh:new THREE.Mesh(marsGeo, marsMat),angle: 1, orbitRadius: 437, orbitSpeed: 0.01};
-        this.scene.add(this.mars.mesh);
     }
 
-    async initNeptune(){
-        const dataUrl = await this.imageService.loadBinaryImage('assets/img/neptune.jpg');
-        const neptuneGeo = new THREE.SphereGeometry(4, 30, 30);
-        const neptuneMat = new THREE.MeshBasicMaterial({
-            map: this.textureLoader.load(dataUrl)
+    async createVenus(){
+        this.loader.load('assets/3DModels/venus.glb', (gltf) => {
+            this.venus ={mesh:gltf.scene.children[0] as THREE.Mesh,angle: 0, orbitRadius: 550, orbitSpeed: 0.000005};
+            this.venus.mesh.scale.set(4, 4, 4);
+            this.scene.add(this.venus.mesh);
         });
-        this.neptune ={mesh:new THREE.Mesh(neptuneGeo, neptuneMat),angle: -1, orbitRadius: 20, orbitSpeed: 0.01};
-        this.scene.add(this.neptune.mesh);
     }
 
-    async initPluto(){
-        const dataUrl = await this.imageService.loadBinaryImage('assets/img/pluto.jpg');
-        const plutoGeo = new THREE.SphereGeometry(7, 30, 30);
-        const plutoMat = new THREE.MeshBasicMaterial({
-            map: this.textureLoader.load(dataUrl)
+    async createEarth(){
+        this.loader.load('assets/3DModels/earth.glb', (gltf) => {
+            this.earth ={mesh:gltf.scene.children[0] as THREE.Mesh,angle: 0, orbitRadius: 750, orbitSpeed:  0.000005};
+            this.earth.mesh.scale.set(4, 4, 4);
+            this.scene.add(this.earth.mesh);
         });
-        this.pluto ={mesh:new THREE.Mesh(plutoGeo, plutoMat),angle: 0, orbitRadius: 300, orbitSpeed: 0.015};
-        this.scene.add(this.pluto.mesh);
     }
+
+    async createMars(){
+         this.loader.load('assets/3DModels/mars.glb', (gltf) => {
+             this.mars ={mesh:gltf.scene.children[0] as THREE.Mesh,angle: 0, orbitRadius: 900, orbitSpeed: 0.000005};
+             this.mars.mesh.scale.set(3, 3, 3);
+             this.scene.add(this.mars.mesh);
+         });
+    }
+
+
+    async createJupiter(){
+        this.loader.load('assets/3DModels/jupiter.glb', (gltf) => {
+            this.jupiter ={mesh:gltf.scene.children[0] as THREE.Mesh,angle: 0, orbitRadius: 1100, orbitSpeed: 0.000005};
+            this.jupiter.mesh.scale.set(9, 9, 9);
+            this.scene.add(this.jupiter.mesh);
+        });
+    }
+
+
+
+    async createSaturn(){
+        this.loader.load('assets/3DModels/saturn.glb', (gltf) => {
+            this.saturn ={mesh:gltf.scene.children[0] as THREE.Mesh,angle: 0, orbitRadius: 1300, orbitSpeed:  0.000005};
+            this.saturn.mesh.scale.set(8, 8, 8);
+            this.scene.add(this.saturn.mesh);
+        });
+    }
+    async createUranus(){
+        this.loader.load('assets/3DModels/uranus.glb', (gltf) => {
+            this.uranus ={mesh:gltf.scene.children[0] as THREE.Mesh,angle: 0, orbitRadius: 1500, orbitSpeed:  0.000005};
+            this.uranus.mesh.scale.set(6, 6, 6);
+            this.scene.add(this.uranus.mesh);
+        });
+    }
+
+    async createNeptune(){
+        this.loader.load('assets/3DModels/neptune.glb', (gltf) => {
+            this.neptune ={mesh:gltf.scene.children[0] as THREE.Mesh,angle: 0, orbitRadius: 1700, orbitSpeed: 0.000005};
+            this.neptune.mesh.scale.set(6, 6, 6);
+            this.scene.add(this.neptune.mesh);
+        });
+    }
+
+    async createMoon(){
+        // this.loader.load('assets/3DModels/moon.glb', (gltf) => {
+        //     this.moon ={mesh:gltf.scene.children[0] as THREE.Mesh,angle: 0, orbitRadius: 400, orbitSpeed: 0.005};
+        //     this.mercury.mesh.scale.set(3, 3, 3);
+        //     this.scene.add(this.mercury.mesh);
+        // });
+
+    }
+    async createPluto(){
+        // this.loader.load('assets/3DModels/pluto.glb', (gltf) => {
+        //     this.pluto ={mesh:gltf.scene.children[0] as THREE.Mesh,angle: 0, orbitRadius: 400, orbitSpeed: 0.005};
+        //     this.pluto.mesh.scale.set(3, 3, 3);
+        //     this.scene.add(this.pluto.mesh);
+        // });
+
+    }
+
+
+
+
     async createSun() {
-        const dataUrl = await this.imageService.loadBinaryImage('assets/img/sun.jpg');
-        const sunGeo = new THREE.SphereGeometry(70, 30, 30);
-        const sunMat = new THREE.MeshBasicMaterial({
-            map: this.textureLoader.load(dataUrl)
+        this.loader.load('assets/3DModels/sun.glb', (gltf) => {
+            this.sun = gltf.scene.children[0] as THREE.Mesh;
+            this.sun.scale.set(15, 15, 15);
+            this.sun.position.set(0, 0, 0);
+            this.scene.add(this.sun);
         });
-        this.sun = new THREE.Mesh(sunGeo, sunMat);
-        this.scene.add(this.sun);
+
     }
+
+    async createBackGround(){
+        //
+        // const background = this.textureLoader.load('assets/img/stars_milky_way.jpg', (background) => {
+        //     background.wrapT = THREE.MirroredRepeatWrapping;
+        //     background.wrapS = THREE.MirroredRepeatWrapping;
+        //     background.offset.set( 0, 0 );
+        //     background.repeat.set( 1, 1 );
+        //     background.anisotropy = 8;
+        // });
+        // const gmBack = new THREE.SphereGeometry(this.backGroundOptions.space_length * 1.1, 300, 300, 1, Math.PI * 2);
+        // const matBack = new THREE.MeshBasicMaterial({ map: background, side: THREE.BackSide, transparent: true, opacity: 2 });
+        // this.backgr = new THREE.Mesh(gmBack, matBack);
+        // this.scene.add(this.backgr);
+    }
+
 
     initScene() {
         // scene
@@ -94,7 +171,14 @@ export class LobbyComponent  implements OnInit{
         this.rayCaster= new THREE.Raycaster();
         this.mouse = new THREE.Vector2();
 
+        // Add ambient light
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Intensity: 0.5
+        this.scene.add(ambientLight);
 
+        // Add point light as your custom light source
+        const pointLight = new THREE.PointLight(0xff0000, 1, 10); // Color: Red, Intensity: 1, Distance: 10
+        pointLight.position.set(0, 3, 0); // Position of the light source
+        this.scene.add(pointLight);
       //  this.stars = new Array(0);
 
        this.orbit = new OrbitControls(this.camera, this.renderer.domElement);
@@ -104,13 +188,33 @@ export class LobbyComponent  implements OnInit{
 
 
   async  ngOnInit() {
-        // Inițializează Three.js
-         await this.initScene();
-         await this.initPluto();
-         await this.initNeptune();
-         await this.initMars();
-         await this.createSun();
 
+
+
+        // Init Objects
+         await this.createSun();
+         await this.initScene();
+         await this.createMercury();
+         await this.createSaturn();
+         await this.createJupiter();
+         await this.createVenus();
+         await this.createNeptune();
+         await this.createMars();
+         await this.createMoon();
+         await this.createPluto();
+         await this.createEarth();
+         await this.createUranus();
+         await this.createBackGround();
+
+
+      window.addEventListener('resize', () =>
+      {
+          this.camera.aspect = window.innerWidth / window.innerHeight;
+          this.camera.updateProjectionMatrix();
+
+          this.renderer.setSize(window.innerWidth, window.innerHeight);
+          this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      })
 
        // Adding Starts
        // this.addingStars();
@@ -134,31 +238,64 @@ export class LobbyComponent  implements OnInit{
          this.ngZone.runOutsideAngular(() => {
              requestAnimationFrame(() => this.animate());
 
-             this.pluto.angle += this.pluto.orbitSpeed;
-             this.mars.angle += this.mars.orbitSpeed;
-             this.neptune.angle += this.neptune.orbitSpeed;
+             const cameraPosition = this.camera.position;
+             const cameraDistance = cameraPosition.length();
 
-             const x = this.sun.position.x + this.pluto.orbitRadius * Math.cos(this.pluto.angle);
-             const z = this.sun.position.z + this.pluto.orbitRadius * Math.sin(this.pluto.angle);
-             const c = this.sun.position.x + this.mars.orbitRadius * Math.cos(this.mars.angle);
-             const d = this.sun.position.z + this.mars.orbitRadius * Math.sin(this.mars.angle);
-             const u = this.mars.mesh.position.x + this.neptune.orbitRadius * Math.cos(this.neptune.angle);
-             const m = this.mars.mesh.position.z + this.neptune.orbitRadius * Math.sin(this.neptune.angle);
+             if (cameraDistance > 3000) {
+                 // Calculate a new position that is at the maximum length along the same direction
+                 const newCameraPosition = cameraPosition.clone().normalize().multiplyScalar(3000);
 
-             this.pluto.mesh.position.set(x, 0, z);
-             this.mars.mesh.position.set(c, 0, d);
-             this.neptune.mesh.position.set(u, 0, m);
+                 // Update the camera's position
+                 this.camera.position.copy(newCameraPosition);
+             }
 
 
-             this.sun.rotation.x += 0.02;
-             this.sun.rotation.y += 0.03;
+             // this.mercury.angle += this.mercury.orbitSpeed;
+             // this.mars.angle += this.mars.orbitSpeed;
+             // this.neptune.angle += this.neptune.orbitSpeed;
+
+             const mercuryX = this.sun.position.x + this.mercury.orbitRadius * Math.cos(this.mercury.angle);
+             const mercuryZ = this.sun.position.z + this.mercury.orbitRadius * Math.sin(this.mercury.angle);
+             const marsX = this.sun.position.x + this.mars.orbitRadius * Math.cos(this.mars.angle);
+             const marsZ = this.sun.position.z + this.mars.orbitRadius * Math.sin(this.mars.angle);
+             const neptuneX = this.sun.position.x + this.neptune.orbitRadius * Math.cos(this.mars.angle);
+             const neptuneZ = this.sun.position.z + this.neptune.orbitRadius * Math.sin(this.mars.angle);
+             const saturnX = this.sun.position.x + this.saturn.orbitRadius * Math.cos(this.mars.angle);
+             const saturnZ = this.sun.position.z + this.saturn.orbitRadius * Math.sin(this.mars.angle);
+             const jupiterX = this.sun.position.x + this.jupiter.orbitRadius * Math.cos(this.mars.angle);
+             const jupiterZ = this.sun.position.z + this.jupiter.orbitRadius * Math.sin(this.mars.angle);
+             const uranusX = this.sun.position.x + this.uranus.orbitRadius * Math.cos(this.mars.angle);
+             const uranusZ = this.sun.position.z + this.uranus.orbitRadius * Math.sin(this.mars.angle);
+             const venusX = this.sun.position.x + this.venus.orbitRadius * Math.cos(this.mars.angle);
+             const venusZ = this.sun.position.z + this.venus.orbitRadius * Math.sin(this.mars.angle);
+             const earthX = this.sun.position.x + this.earth.orbitRadius * Math.cos(this.mars.angle);
+             const earthZ = this.sun.position.z + this.earth.orbitRadius * Math.sin(this.mars.angle);
+
+
+             //this.backgr.position.set(this.sun.position.x,0,this.sun.position.z)
+
+             this.mercury.mesh.position.set(mercuryX, 0, mercuryZ);
+             this.mars.mesh.position.set(marsX, 0, marsZ);
+             this.neptune.mesh.position.set(neptuneX, 0, neptuneZ);
+             this.saturn.mesh.position.set(saturnX, 0, saturnZ);
+             this.jupiter.mesh.position.set(jupiterX, 0, jupiterZ);
+             this.uranus.mesh.position.set(uranusX, 0, uranusZ);
+             this.venus.mesh.position.set(venusX, 0, venusZ);
+             this.earth.mesh.position.set(earthX, 0, earthZ);
+
+
+            // this.backgr.rotateZ(-0.001);
+             //this.backgr.position.z = -this.backGroundOptions.space_length * 0.9;
+
+             this.sun.rotation.x -= 0.0008;
+             this.sun.rotation.y -= 0.0009;
 
              this.neptune.mesh.rotation.x += 0.01;
              this.neptune.mesh.rotation.y += 0.01;
              this.mars.mesh.rotation.x += 0.01;
              this.mars.mesh.rotation.y += 0.01;
-             this.pluto.mesh.rotation.x += 0.02;
-             this.pluto.mesh.rotation.y += 0.05;
+             this.mercury.mesh.rotation.x += 0.002;
+             this.mercury.mesh.rotation.y += 0.005;
 
              this.renderer.render(this.scene, this.camera);
          });
